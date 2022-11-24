@@ -14,12 +14,8 @@ find codeblocks4.pot >> files.txt
 
 find ../plugins | grep -v contrib | grep -F .cpp | grep -v .svn | grep -v svn-base | grep -v .patch | xargs xgettext --keyword=_ -o coreplugins1.pot 2>> log.txt
 find ../plugins | grep -v contrib | grep -F .h   | grep -v .svn | grep -v svn-base | grep -v html   | xargs xgettext --keyword=_ -o coreplugins2.pot 2>> log.txt
-REM echo "Special case : Search for strings identified with wxTRANSLATE in wxscolourproperty.cpp"
-REM find ../plugins/contrib/wxSmith/wxwidgets/properties/wxscolourproperty.cpp | xargs grep -F "wxTRANSLATE" | sed 's/wxTRANSLATE/_/' > test_wxtranslate.cpp
-REM find test_wxtranslate.cpp | xargs xgettext --keyword=_ -o coreplugins3.pot 2>> log.txt
 find coreplugins1.pot >> files.txt
 find coreplugins2.pot >> files.txt
-REM find coreplugins3.pot >> files.txt
 
 echo *
 echo *******************************
@@ -40,7 +36,7 @@ echo *
 find ../src/resources | grep -F .xrc | grep -v .svn | grep -v svn-base | xargs wxrc -g -o src_xrc.cpp 2>> log.txt
 find ../sdk/resources | grep -F .xrc | grep -v .svn | grep -v svn-base | xargs wxrc -g -o sdk_xrc.cpp 2>> log.txt
 find ../plugins | grep -F .xrc | grep -v .svn | grep -v svn-base | xargs wxrc -g -o plugins_xrc2.cpp 2>> log.txt
-REM Why next lines ? modifications in recent wxrc ? string modif ? Only one line (1515) in compiler_options.xrc has a problem, though the same syntax in a previous line (1151) is OK !
+REM Why next lines? modifications in recent wxrc? string modif? Only one line (1515) in compiler_options.xrc has a problem, though the same syntax in a previous line (1151) is OK!
 sed -i 's/\"Compiling <file>...\"/\\\"Compiling <file>...\\\"/g' plugins_xrc2.cpp
 REM Eliminate a truncated string containing only "At ".
 sed -i 's/\"else\"/\\\"else\\\"/g' plugins_xrc2.cpp
@@ -48,9 +44,6 @@ REM In .xrc files, there is no way to indicate that a string is translatable or 
 grep -v msp430x plugins_xrc2.cpp | grep -v dragon_ | grep -v msp430x | grep -v cc430x | grep -v jtag1 | grep -v jtag2 | grep -v jtagm | grep -v atxmega | grep -v atmega | grep -v attiny | grep -v at86 | grep -v at90 | grep -v AT90 | grep -v TC1 > plugins_xrc.cpp
 
 del plugins_xrc2.cpp
-REM In plugins_xrc.cpp we have a line containing "At "else" folding" (2826) pour #line 1644 "../plugins/contrib/wxSmithSTC/stedit/src/stedit.xrc"
-REM but when decoded by the following, it is truncated to "At " in xrc.pox (and in .pot), because it stops on the second ", just before else. Is there a way to avoid this ?
-REM NOTE : in stedlgs_wdr.xrc, we have "At \"else\" folding" but this string has not such problem.
 
 echo *
 echo *************************************************
