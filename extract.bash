@@ -39,7 +39,7 @@ find ../plugins         | grep -F .xrc | grep -v .svn | grep -v svn-base | xargs
 sed -i 's|"Compiling <file>..."|\\"Compiling <file>...\\"|g' plugins_xrc2.cpp
 # Eliminate a truncated string containing only "At ".
 sed -i 's|"else"|\\"else\\"|g' plugins_xrc2.cpp
-# In .xrc files, there is no way to indicate that a string is translatable or not. So those following grep - v try to eliminate some lines.
+# In .xrc files, there is no direct way to indicate that a string is translatable or not. So those following grep - v try to eliminate some lines.
 grep -v msp430x plugins_xrc2.cpp | grep -v dragon_ | grep -v msp430x | grep -v cc430x | grep -v jtag1 | grep -v jtag2 | grep -v jtagm | grep -v atxmega | grep -v atmega | grep -v attiny | grep -v at86 | grep -v at90 | grep -v AT90 | grep -v TC1 > plugins_xrc.cpp
 
 rm -f plugins_xrc2.cpp
@@ -54,8 +54,8 @@ sed "s/\$\$*/\$/g" xrc.pot > xrc.pox
 sed 's/\\\\\\\\/\\\\/g' xrc.pox > xrc.pot
 find xrc.pot >> files.txt
 
-# Extracting strings from files as .xml, .xrc need more work because there is nothing to speify than a string is translatable or not.
-# May also need additionnal filters if the serached string is on several lines.
+# Extracting strings from files as .xml, .xrc need more work because there is nothing to specify than a string is translatable or not.
+# May also need additionnal filters if the searched string is on several lines.
 
 echo ""
 echo "*************************************************"
@@ -86,13 +86,14 @@ xgettext -a -s -o xml2_a.pot src_xml_title.cpp
 find xml2_a.pot >> files.txt
 # The find for "title" does not work correctly for "description" if the string expands on several lines ! Only the first line is kept => the extracted text is truncated.
 # With the following version, the string begin with "description" line and ends on "author" line => this implies than the order of the fields are the same in all manifests.
-# More, if in manifest*.xml, in the description string, there is a CR/LF, it should be kept in the original string, because even if poedit "complains" the translation takes it into account.
-find ../plugins | grep -F manifest | grep -F .xml | grep -v svn-base | grep -v .svn | xargs sed -n -e '/description/,/>/p'  | sed '/author/d'       | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/""//g' | sed 's/>\\n/>'"\\${nl}"'/g' | sed 's/&quot;/\\"/g' | sed 's/&amp;/\&/g' > src_xml_desc.cpp   2>> log.txt
+# More, if in manifest*.xml, in the extracted string, there is a CR/LF, it should be kept in the original string, because even if poedit "complains" the translation takes it into account.
+# Nevertheless, it seems that the CR is eliminated (may be by recent sed versions). No problem with description field but thanksTo, though extracted, are not translated (missing \r !)
+find ../plugins | grep -F manifest | grep -F .xml | grep -v svn-base | grep -v .svn | xargs sed -n -e '/description/,/>/p' | sed '/author=/d'     | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/""//g' | sed 's/>\\n/>'"\\${nl}"'/g' | sed 's/&quot;/\\"/g' | sed 's/&amp;/\&/g' > src_xml_desc.cpp   2>> log.txt
 xgettext -a -s -o xml2_b.pot src_xml_desc.cpp
 find xml2_b.pot >> files.txt
 
 # for keyword thanksTo
-find ../plugins | grep -F manifest | grep -F .xml | grep -v svn-base | grep -v .svn | xargs sed -n -e '/thanksTo/,/>/p'     | sed '/license/d'      | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/""//g' | sed 's/>\\n/>'"\\${nl}"'/g' | sed 's/&quot;/\\"/g' | sed 's/&amp;/\&/g' > src_xml_thanks.cpp 2>> log.txt
+find ../plugins | grep -F manifest | grep -F .xml | grep -v svn-base | grep -v .svn | xargs sed -n -e '/thanksTo/,/>/p'    | sed '/license=/d'    | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/""//g' | sed 's/>\\n/>'"\\${nl}"'/g' | sed 's/&quot;/\\"/g' | sed 's/&amp;/\&/g' > src_xml_thanks.cpp 2>> log.txt
 xgettext -a -s -o xml2_c.pot src_xml_thanks.cpp
 find xml2_c.pot >> files.txt
 
@@ -102,7 +103,7 @@ find ../plugins | grep -F manifest | grep -F .xml | grep -v svn-base | grep -v .
 xgettext -a -s -o xml2_d.pot src_xml_author.cpp
 find xml2_d.pot >> files.txt
 
-# for keyword license (single line); include the = sign to be sure that lines containing the word license in a sentence are not kept.
+# for keyword license (single line); include the = sign to be sure that lines containing the word "license" in a sentence are not kept.
 find ../plugins | grep -F manifest | grep -F .xml | grep -v svn-base | grep -v .svn | xargs grep -F "license="  >>  src_xml_lic.cpp 2>> log.txt
 xgettext -a -s -o xml2_e.pot src_xml_lic.cpp
 find xml2_e.pot >> files.txt
